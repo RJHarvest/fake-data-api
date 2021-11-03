@@ -9,6 +9,7 @@ def get_exception_response_and_code(error):
     code = error_codes.get(exception_type, 500)
     response = {
         'code': code,
+        'field': error.field,
         'reason': str(error)
     }
     return response, code
