@@ -1,8 +1,9 @@
 import names
 import random
+import requests
 from lorem_text import lorem
 from error.exceptions import RequiredParamError, OptionFormatError
-import requests
+from datetime import datetime, date, timedelta
 
 def generate_fake_data(schema, data_count):
     response = []
@@ -27,7 +28,9 @@ def get_data_cmd_dict():
         'integer': create_integer,
         'boolean': create_boolean,
         'decimal': create_decimal,
-        'image_url': create_image_url
+        'image_url': create_image_url,
+        'datetime': create_datetime,
+        'date': create_date
     }
 
 def generate_fake_value(value):
@@ -140,3 +143,59 @@ def create_image_url(options):
     random_index = random.randint(0, len(results))
     image_url = results[random_index]['urls']['regular']
     return image_url.replace('w=1080', f'w={width}')
+
+def create_datetime(options):
+    if 'range' not in options:
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    range = options['range']
+
+    if not isinstance(range, list):
+        raise OptionFormatError('range should be an array')
+    if len(range) != 2 or range[0] > range[1]:
+        raise OptionFormatError('range format should be [<start_datetime>, <end_datetime>]')
+
+    try:
+        start_datetime = datetime.strptime(range[0], '%Y-%m-%d %H:%M:%S')
+        end_datetime = datetime.strptime(range[1], '%Y-%m-%d %H:%M:%S')
+    except ValueError as e:
+        raise OptionFormatError(str(e))
+
+    delta = end_datetime - start_datetime
+    int_delta = delta.total_seconds()
+
+    # return the start_date/end_date if they have the same value
+    if int_delta == 0.0:
+        return start_datetime.strftime('%Y-%m-%d %H:%M:%S')
+
+    random_second = random.randrange(int_delta)
+    random_datetime = start_datetime + timedelta(seconds=random_second)
+    return random_datetime.strftime('%Y-%m-%d %H:%M:%S')
+
+def create_date(options):
+    if 'range' not in options:
+        return date.today().strftime('%Y-%m-%d')
+
+    range = options['range']
+
+    if not isinstance(range, list):
+        raise OptionFormatError('range should be an array')
+    if len(range) != 2 or range[0] > range[1]:
+        raise OptionFormatError('range format should be [<start_date>, <end_date>]')
+
+    try:
+        start_date = datetime.strptime(range[0], '%Y-%m-%d')
+        end_date = datetime.strptime(range[1], '%Y-%m-%d')
+    except ValueError as e:
+        raise OptionFormatError(str(e))
+
+    delta = end_date - start_date
+    int_delta = delta.total_seconds()
+
+    # return the start_date/end_date if they have the same value
+    if int_delta == 0.0:
+        return start_date.strftime('%Y-%m-%d')
+
+    random_second = random.randrange(int_delta)
+    random_date = start_date + timedelta(seconds=random_second)
+    return random_date.strftime('%Y-%m-%d')
