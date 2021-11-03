@@ -5,14 +5,17 @@ from lorem_text import lorem
 from error.exceptions import RequiredParamError, OptionFormatError
 from datetime import datetime, date, timedelta
 
-def generate_fake_data(schema, data_count):
+def generate_fake_data(schema, data_count, include_index=False):
     response = []
     for i in range(int(data_count)):
         jsn_response = {}
+
+        if include_index:
+            jsn_response['_id'] = i
+
         for key, value in schema.items():
             jsn_response[key] = generate_fake_value(value)
         response.append(jsn_response)
-
     return response
 
 def get_data_cmd_dict():
@@ -64,6 +67,9 @@ def create_sentence(options):
 def create_paragraph(options):
     if 'paragraph_length' in options:
         paragraph_length = options['paragraph_length']
+
+        if not isinstance(paragraph_length, int):
+            raise OptionFormatError('paragraph_length type must be an integer')
         return lorem.paragraphs(paragraph_length)
     return lorem.paragraph()
 
@@ -72,6 +78,9 @@ def create_words(options):
         raise RequiredParamError('word_length')
 
     word_length = options['word_length']
+
+    if not isinstance(word_length, int):
+        raise OptionFormatError('word_length type must be an integer')
     return lorem.words(word_length)
 
 def create_enum(options):
