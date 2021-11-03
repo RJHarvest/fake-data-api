@@ -2,6 +2,8 @@ import names
 import random
 from helper import generate_fake_data
 from flask import Flask, jsonify, request
+from error.handlers import get_exception_response_and_code
+from error.exceptions import EmptyRequestError
 
 app = Flask(__name__)
 
@@ -21,7 +23,8 @@ def get_fake_users(user_count=None):
         user = {
             'name':  {
                 'first': first_name,
-                'last': last_name
+                'last': last_name,
+                'full': f'{first_name} {last_name}'
             },
             'gender': gender,
             'contact': {
@@ -34,13 +37,15 @@ def get_fake_users(user_count=None):
 @app.route('/get_fake_data/<data_count>', methods=['GET'])
 def get_fake_data(data_count=None):
     json_request = request.get_json()
-    if (json_request == None):
-        return "400 Bad Request", 400
     try:
+        if (json_request == None):
+            raise EmptyRequestError
+
         response = generate_fake_data(json_request, data_count)
         return jsonify(response), 200
     except Exception as e:
-        return e, 500
+        response, code = get_exception_response_and_code(e)
+        return jsonify(response), code
 
 def get_gender(gender_preference):
     if gender_preference:
