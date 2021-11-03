@@ -21,6 +21,7 @@ def get_fake_users(user_count=None):
         first_name = names.get_first_name(gender=gender)
         last_name = names.get_last_name()
         user = {
+            '_id': i,
             'name':  {
                 'first': first_name,
                 'last': last_name,
@@ -37,11 +38,12 @@ def get_fake_users(user_count=None):
 @app.route('/get_fake_data/<data_count>', methods=['GET'])
 def get_fake_data(data_count=None):
     json_request = request.get_json()
+    include_index = True if request.args.get('include_index') == '1' else False
     try:
         if (json_request == None):
             raise EmptyRequestError
 
-        response = generate_fake_data(json_request, data_count)
+        response = generate_fake_data(json_request, data_count, include_index=include_index)
         return jsonify(response), 200
     except Exception as e:
         response, code = get_exception_response_and_code(e)
