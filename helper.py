@@ -50,8 +50,8 @@ def create_last_name(options, field):
     return names.get_last_name()
 
 def create_full_name(options, field):
-    first_name = create_first_name(options)
-    last_name = create_last_name(options)
+    first_name = create_first_name(options, field)
+    last_name = create_last_name(options, field)
     return f'{first_name} {last_name}'
 
 def create_email(options, field):
